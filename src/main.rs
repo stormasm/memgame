@@ -1,6 +1,3 @@
-// Disable command line from opening on release mode
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-
 mod assets;
 mod colors;
 mod components;
@@ -14,18 +11,9 @@ use gpui::{App, Application, Bounds, KeyBinding, TitlebarOptions, WindowBounds, 
 use gpui::{actions, px, size};
 use memory_game::MemoryGame;
 
-#[global_allocator]
-static ALLOC: mimalloc::MiMalloc = mimalloc::MiMalloc;
-
 actions!(gpui_shadcn, [Quit, Open, CloseWindow]);
 
 fn main() {
-  #[cfg(all(not(debug_assertions), target_os = "windows"))]
-  unsafe {
-    use windows::Win32::System::Console::{ATTACH_PARENT_PROCESS, AttachConsole};
-    let _ = AttachConsole(ATTACH_PARENT_PROCESS);
-  }
-
   let app = Application::new().with_assets(Assets);
 
   app.run(|cx| {
@@ -51,10 +39,6 @@ fn main() {
       window_min_size: Some(min_size),
       titlebar: Some(titlebar),
       kind: WindowKind::Normal,
-      #[cfg(target_os = "linux")]
-      window_background: gpui::WindowBackgroundAppearance::Transparent,
-      #[cfg(target_os = "linux")]
-      window_decorations: Some(gpui::WindowDecorations::Client),
       ..Default::default()
     };
     cx.open_window(options, |_window, cx| cx.new(|_cx| MemoryGame::new()))
